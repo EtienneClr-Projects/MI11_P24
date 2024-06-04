@@ -22,6 +22,7 @@
  * valeur = tache suivante
  */
 static uint16_t _file[MAX_FILE][MAX_TACHES_FILE];
+static uint16_t _file_fond[MAX_TACHES_FILE];
 
 /*
  * index de queue
@@ -29,6 +30,7 @@ static uint16_t _file[MAX_FILE][MAX_TACHES_FILE];
  * pointe sur la prochaine tache a activer
  */
 static uint16_t _queue[MAX_FILE];
+static uint16_t _queue_fond;
 
 static uint8_t  _file_u;
 
@@ -82,6 +84,8 @@ void file_init(void) {
 	for (i=0; i<MAX_FILE; i++){
 		_queue[i] = F_VIDE;
 	}
+	_queue_fond = F_VIDE;
+	
 	_file_u = 0;
 }
 

@@ -92,8 +92,12 @@ TACHE	tachedefond(void)
 	id = 56;
 		_noyau_tcb_add[id].Nb_tour = 5;
 		_noyau_tcb_add[id].wait_time = 1;
-			active(cree(tacheGen, id, (void*)&_noyau_tcb_add[id]));
-  while(1){};
+		active(cree(tacheGen, id, (void*)&_noyau_tcb_add[id]));
+
+	while(1) {
+
+	 };
+
 }
 
 TACHE	tacheGen(void)
