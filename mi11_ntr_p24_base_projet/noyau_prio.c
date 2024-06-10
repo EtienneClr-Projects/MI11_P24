@@ -27,6 +27,8 @@
  *--------------------------------------------------------------------------*/
 static int compteurs[MAX_TACHES_NOYAU];  /* Compteurs d'activations               */
 NOYAU_TCB  _noyau_tcb[MAX_TACHES_NOYAU]; /* tableau des contextes                 */
+NOYAU_TCB_APERIODIC  _noyau_tcb_apperiodic[MAX_TACHES_NOYAU]; /* tableau des contextes pour les tâches apériodiques               */
+uint16_t _ap_cmpt = 0;
 volatile uint16_t _tache_c;        /* numéro de tache courante              */
 uint32_t _tos;                     /* adresse du sommet de pile des tâches  */
 uint8_t _ack_timer = 1;            /* variable de détection d'appel SYSTICK */
@@ -88,7 +90,9 @@ uint8_t _ack_timer = 1;            /* variable de détection d'appel SYSTICK */
     /* Q2.5 : initialisation de l'etat des taches                            */
     for (j = 0; j < MAX_TACHES_NOYAU; j++) {
         _noyau_tcb[j].status = NCREE; /* initialisation de l'etat des taches */
+        _noyau_tcb_apperiodic[j].status = NCREE; /* initialisation de l'etat des taches apériodiques */
     }
+
     /* Q2.6 : initialisation de la tache courante */
     _tache_c = 63;
     /* initialisation de la file circulaire de gestion des tâches           */ 
@@ -117,7 +121,7 @@ uint8_t _ack_timer = 1;            /* variable de détection d'appel SYSTICK */
  *               en cas d'erreur, le noyau doit etre arrete
  * Err. fatale: priorite erronnee, depassement du nb. maximal de taches 
  */
- uint16_t cree(TACHE_ADR adr_tache, uint16_t id, void* add){
+uint16_t cree(TACHE_ADR adr_tache, uint16_t id, void* add) {
     /* pointeur d'une case de _noyau_tcb         */
     NOYAU_TCB *p;
 
@@ -126,10 +130,10 @@ uint8_t _ack_timer = 1;            /* variable de détection d'appel SYSTICK */
 
     /* Q2.16 : arret du noyau si plus de MAX_TACHES^*/
     if (id >= MAX_TACHES_NOYAU) {
-        noyau_exit();               /* sortie si depassement                    */
+        noyau_exit();
     }
     if (_noyau_tcb[id].status != NCREE) {
-            noyau_exit();
+        noyau_exit();
     }
    /* creation du contexte de la nouvelle tache */
     p = &_noyau_tcb[id];
@@ -151,6 +155,34 @@ uint8_t _ack_timer = 1;            /* variable de détection d'appel SYSTICK */
     _unlock_(); 
 
     return (id); /* tache est un uint16_t */
+}
+
+uint16_t cree_aperiodic(TACHE_ADR adr_tache, void* add) {
+    NOYAU_TCB_APERIODIC *p;
+
+    _lock_();            
+    if (_ap_cmpt >= MAX_TACHES_NOYAU) {
+        // il faut changer la ligne en dessous car on ne veut plus de noyau exit
+        noyau_exit();
+    }
+    if (_noyau_tcb_apperiodic[_ap_cmpt].status != NCREE) {
+        // il faut changer la ligne en dessous car on ne veut plus de noyau exit
+        noyau_exit();
+    }
+
+    /* creation du contexte de la nouvelle tache */
+    /* Q2.17 : allocation d'une pile a la tache */
+    p->sp_ini = _tos;         
+    /* Q2.18 : decrementation du pointeur de pile general, afin que la prochaine tache */
+	/* n'utilise pas la pile allouee pour la tache courante */
+    _tos -= PILE_TACHE;         
+    /* Q2.19 : memorisation de l'adresse de debut de la tache */
+    p->task_adr = adr_tache;
+    p->tcb_add = add;
+    p->status = CREE; 
+    _unlock_(); 
+
+    return _ap_cmpt++;
 }
 
 /*
@@ -222,6 +254,13 @@ uint32_t task_switch(uint32_t sp)
     /* Q2.29 : verifie qu'une tache suivante existe, sinon arret du noyau */
     if (_tache_c == F_VIDE) {
         printf("Plus rien à ordonnancer.\n");
+        
+        /********************************************************************/
+        /********************************************************************/
+        /* Dans ce cas là il faut router notre tâche vers les tâches de fond qui tournent en continu et ne surtout pas faire de noyau exit */
+        /********************************************************************/
+        /********************************************************************/
+
         noyau_exit();           /* Sortie du noyau                          */
     }
 

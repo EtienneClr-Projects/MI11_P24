@@ -52,11 +52,11 @@ TACHE	tachedefond(void)
 	id = 3;
 		_noyau_tcb_add[id].Nb_tour = 1;
 		_noyau_tcb_add[id].wait_time = 100;
-		active(cree(tacheGen, id,  (void*)&_noyau_tcb_add[id] ));
+		active(cree(tacheGen, id, (void*)&_noyau_tcb_add[id]));
 	id = 8;
 		_noyau_tcb_add[id].Nb_tour = 2;
 		_noyau_tcb_add[id].wait_time = 50;
-		active(cree(tacheGen, id,  (void*)&_noyau_tcb_add[id] ));
+		active(cree(tacheGen, id, (void*)&_noyau_tcb_add[id]));
  	id = 16;
 		_noyau_tcb_add[id].Nb_tour = 4;
 		_noyau_tcb_add[id].wait_time = 60;
@@ -72,7 +72,7 @@ TACHE	tachedefond(void)
 	id = 31;
 		_noyau_tcb_add[id].Nb_tour = 3;
 		_noyau_tcb_add[id].wait_time = 15;
-			active(cree(tacheGen, id, (void*)&_noyau_tcb_add[id]));
+		active(cree(tacheGen, id, (void*)&_noyau_tcb_add[id]));
 	id = 32;
 		_noyau_tcb_add[id].Nb_tour = 2;
 		_noyau_tcb_add[id].wait_time = 10;
@@ -94,9 +94,7 @@ TACHE	tachedefond(void)
 		_noyau_tcb_add[id].wait_time = 1;
 		active(cree(tacheGen, id, (void*)&_noyau_tcb_add[id]));
 
-	while(1) {
-
-	 };
+	while(1) {};
 
 }
 
@@ -118,36 +116,36 @@ TACHE	tacheGen(void)
 	delay_n_ticks(20);
 	while(1){
 		//id_tache = noyau_get_tc();
-  		  while(tache_get_flag_tick(id_tache) != 0){
-  			  _lock_();
-  			  for(i = POS_CHRONO; i<(POS_CHRONO+8); i++){
-  				    printf("%s%d;%d%s",CODE_ESCAPE_BASE,i, pos_x,"H");
-  			    	if((i-POS_CHRONO) == (id_tache >> 3) ){
-  			    		SET_CURSOR_POSITION( i, pos_x);
-  			    		SET_BACKGROUND_COLOR(id_tache+16);
-  			    		SET_FONT_COLOR(15);
-  			    		printf("%2d", id_tache);
-  			    		SET_BACKGROUND_COLOR(0);
-  			    	} else {
-  			    		SET_BACKGROUND_COLOR(0);
-  			    		printf("  ");
-  			    	}
-			  }
-  			  pos_x = pos_x + 2;
-			  if (pos_x > MAX_CARA_LIGNE){
-			    	pos_x = 1;
-			  }
+		while(tache_get_flag_tick(id_tache) != 0){
+			_lock_();
+			for(i = POS_CHRONO; i<(POS_CHRONO+8); i++){
+				printf("%s%d;%d%s",CODE_ESCAPE_BASE,i, pos_x,"H");
+				if((i-POS_CHRONO) == (id_tache >> 3) ){
+					SET_CURSOR_POSITION( i, pos_x);
+					SET_BACKGROUND_COLOR(id_tache+16);
+					SET_FONT_COLOR(15);
+					printf("%2d", id_tache);
+					SET_BACKGROUND_COLOR(0);
+				} else {
+					SET_BACKGROUND_COLOR(0);
+					printf("  ");
+				}
+			}
+			pos_x = pos_x + 2;
+			if (pos_x > MAX_CARA_LIGNE){
+				pos_x = 1;
+			}
 
-			  if (j >= Nb_tour){
-					 j = 1;
-					 delay_n_ticks(wait_time);
-			  } else {
-					 j++;
-			  }
-			  _unlock_();
-			  tache_reset_flag_tick(id_tache);
-  		  }
-  	  }
+			if (j >= Nb_tour){
+					j = 1;
+					delay_n_ticks(wait_time);
+			} else {
+					j++;
+			}
+			_unlock_();
+			tache_reset_flag_tick(id_tache);
+		}
+	}
 }
 
 

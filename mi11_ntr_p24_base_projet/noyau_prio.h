@@ -52,23 +52,23 @@
 /* Contexte CPU complet d'une tâche */
 /************************************/
 typedef struct __attribute__((packed, aligned(4))) {
-    uint32_t r4;
-    uint32_t r5;
-    uint32_t r6;
-    uint32_t r7;
-    uint32_t r8;
-    uint32_t r9;
-    uint32_t r10;
-    uint32_t r11;
-    uint32_t lr_exc;
-    uint32_t r0;
-    uint32_t r1;
-    uint32_t r2;
-    uint32_t r3;
-    uint32_t r12;
-    uint32_t lr;
-    uint32_t pc;
-    uint32_t psr;
+  uint32_t r4;
+  uint32_t r5;
+  uint32_t r6;
+  uint32_t r7;
+  uint32_t r8;
+  uint32_t r9;
+  uint32_t r10;
+  uint32_t r11;
+  uint32_t lr_exc;
+  uint32_t r0;
+  uint32_t r1;
+  uint32_t r2;
+  uint32_t r3;
+  uint32_t r12;
+  uint32_t lr;
+  uint32_t pc;
+  uint32_t psr;
 } CONTEXTE_CPU_BASE;
 
 
@@ -103,6 +103,16 @@ typedef struct {
   	  	  	  	  	  	       qu'un tick horloge est passé depuis une période précédente */
   void   	*tcb_add; 		/* pointeur sur des paramètres supplémentaires pour la tâches */
 } NOYAU_TCB;
+
+typedef struct {
+  uint16_t  status;			/* etat courant de la tache        */
+  uint32_t  sp_ini;    		/* valeur initiale de sp           */
+  uint32_t  sp_start;   	/* valeur de base de sp pour la tache */
+  uint32_t  sp;        		/* valeur courante de sp           */
+  TACHE_ADR task_adr;    	/* Pointeur de la fonction de tâche*/
+  uint16_t 	id;				/* identité de la tâche */
+  void   	*tcb_add; 		/* pointeur sur des paramètres supplémentaires pour la tâches */
+} NOYAU_TCB_APERIODIC;
 
 
 

@@ -35,7 +35,7 @@ void delay_n_ticks(uint32_t nticks){
 	_lock_();
 	tachecourante = noyau_get_tc();
 	p_tcb = noyau_get_p_tcb(tachecourante);
-	if(nticks !=0){
+	if(nticks != 0){
 		p_tcb->cmpt = nticks;
 		dort();
 	}
