@@ -87,7 +87,7 @@ void fin_tache(void)
  * sortie : sans
  * description : active la tache et lance le scheduler
  */
-void start()
+void start(uint16_t addr_tache)
 {
     uint16_t j;
     register unsigned int sp asm("sp");
@@ -114,7 +114,7 @@ void start()
     /* Q2.10 : initialisation de l'interruption systick  (voir cortex.c) */
     systick_irq_enable();
     /* Q2.11 : creation et activation de la premiere tache                          */
-
+    active(cree(tachedefond, 63, NULL));
     active_aperiodic(cree_aperiodic(tachedefond, NULL));
 
     /* Q2.12 : on autorise les interruptions */
@@ -310,11 +310,7 @@ uint32_t task_switch(uint32_t sp)
     {
         printf("Plus rien à ordonnancer.\n");
 
-        /********************************************************************/
-        /********************************************************************/
-        /* Dans ce cas là il faut router notre tâche vers les tâches de fond qui tournent en continu et ne surtout pas faire de noyau exit */
-        /********************************************************************/
-        /********************************************************************/
+        active_aperiodic(tachedefond);
 
         noyau_exit(); /* Sortie du noyau                          */
     }
@@ -462,136 +458,16 @@ void flag_tick_process(void)
     }
 }
 
-TACHE tachedefond(void);
-TACHE tacheGen(void);
 
-#define MAX_CARA_LIGNE 80
-#define POS_CHRONO 10
-
-NOYAU_TCB_ADD _noyau_tcb_add[MAX_TACHES_NOYAU];
-
-uint16_t pos_x = 1;
-uint16_t pos_y = 10;
-
-typedef struct
-{
-    // adresse de debut de la tache
-    uint16_t Nb_tour;
-    // etat courant de la tache
-    uint16_t wait_time;
-} NOYAU_TCB_ADD;
 
 void tachedefond(void)
 {
-    uint16_t id;
-
     SET_CURSOR_POSITION(3, 1);
     puts("------> EXEC tache de fond");
 
-    id = 3;
-    _noyau_tcb_add[id].Nb_tour = 1;
-    _noyau_tcb_add[id].wait_time = 100;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
-    id = 8;
-    _noyau_tcb_add[id].Nb_tour = 2;
-    _noyau_tcb_add[id].wait_time = 50;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
-    id = 16;
-    _noyau_tcb_add[id].Nb_tour = 4;
-    _noyau_tcb_add[id].wait_time = 60;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
-    id = 18;
-    _noyau_tcb_add[id].Nb_tour = 4;
-    _noyau_tcb_add[id].wait_time = 40;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
-    id = 24;
-    _noyau_tcb_add[id].Nb_tour = 3;
-    _noyau_tcb_add[id].wait_time = 15;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
-    id = 31;
-    _noyau_tcb_add[id].Nb_tour = 3;
-    _noyau_tcb_add[id].wait_time = 15;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
-    id = 32;
-    _noyau_tcb_add[id].Nb_tour = 2;
-    _noyau_tcb_add[id].wait_time = 10;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
-    id = 37;
-    _noyau_tcb_add[id].Nb_tour = 3;
-    _noyau_tcb_add[id].wait_time = 10;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
-    id = 40;
-    _noyau_tcb_add[id].Nb_tour = 3;
-    _noyau_tcb_add[id].wait_time = 5;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
-    id = 48;
-    _noyau_tcb_add[id].Nb_tour = 5;
-    _noyau_tcb_add[id].wait_time = 2;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
-    id = 56;
-    _noyau_tcb_add[id].Nb_tour = 5;
-    _noyau_tcb_add[id].wait_time = 1;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
 
-    while (1)
-    {
-    };
+    // ici on execute les taches aperiodiques
+    
+    while (1){};
 }
 
-TACHE tacheGen(void)
-{
-    volatile NOYAU_TCB *p_tcb = NULL;
-    volatile uint16_t id_tache;
-    uint16_t i, j = 1;
-
-    id_tache = noyau_get_tc();
-    p_tcb = noyau_get_p_tcb(id_tache);
-
-    volatile uint16_t Nb_tour = ((NOYAU_TCB_ADD *)(p_tcb->tcb_add))->Nb_tour;
-    volatile uint16_t wait_time = ((NOYAU_TCB_ADD *)(p_tcb->tcb_add))->wait_time;
-
-    // on laisse du temps à la tâche de fond de démarrer toutes les tâches
-    delay_n_ticks(20);
-    while (1)
-    {
-        // id_tache = noyau_get_tc();
-        while (tache_get_flag_tick(id_tache) != 0)
-        {
-            _lock_();
-            for (i = POS_CHRONO; i < (POS_CHRONO + 8); i++)
-            {
-                printf("%s%d;%d%s", CODE_ESCAPE_BASE, i, pos_x, "H");
-                if ((i - POS_CHRONO) == (id_tache >> 3))
-                {
-                    SET_CURSOR_POSITION(i, pos_x);
-                    SET_BACKGROUND_COLOR(id_tache + 16);
-                    SET_FONT_COLOR(15);
-                    printf("%2d", id_tache);
-                    SET_BACKGROUND_COLOR(0);
-                }
-                else
-                {
-                    SET_BACKGROUND_COLOR(0);
-                    printf("  ");
-                }
-            }
-            pos_x = pos_x + 2;
-            if (pos_x > MAX_CARA_LIGNE)
-            {
-                pos_x = 1;
-            }
-
-            if (j >= Nb_tour)
-            {
-                j = 1;
-                delay_n_ticks(wait_time);
-            }
-            else
-            {
-                j++;
-            }
-            _unlock_();
-            tache_reset_flag_tick(id_tache);
-        }
-    }
-}
