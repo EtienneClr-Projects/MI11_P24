@@ -113,6 +113,23 @@ void file_ajoute(uint16_t n) {
     *q = num_t;
 }
 
+void file_fond_ajoute(uint16_t n) {
+	uint16_t num_t, *q, *f;
+
+	num_t    = n & MASK_NT;
+	q = &_queue_fond;
+	f = &_file_fond[0];
+	if (*q == F_VIDE) {
+		f[num_t] = n;
+	} else {
+		f[num_t] = f[*q];
+		f[*q] = n;
+	}
+
+	*q = num_t;
+
+}
+
 /*
  * retire une tache de la file
  * entre  : t numero de la tache a retirer
