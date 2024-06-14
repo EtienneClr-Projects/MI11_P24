@@ -90,10 +90,29 @@ int main()
 // *************************
 // TACHES APERIODIQUES
 // *************************
+// INIT FIFO
+    fifo_init(&fifo_tache_aperiodic);
 
     //ACHETER DES OUTILS
+    tab_tache_aperiodic[0].adr = tachePeriodique;
+    tab_tache_aperiodic[0].name = "ACHETER DES OUTILS";
+    // init params??? TODO
+    fifo_ajoute(&fifo_tache_aperiodic, 0);
 
+    //FAIRE L'ADMINISTRATIF
+    tab_tache_aperiodic[1].adr = tachePeriodique;
+    tab_tache_aperiodic[1].name = "FAIRE L'ADMINISTRATIF";
+    fifo_ajoute(&fifo_tache_aperiodic, 1);
 
+    //FAIRE DES DEVIS
+    tab_tache_aperiodic[2].adr = tachePeriodique;
+    tab_tache_aperiodic[2].name = "FAIRE DES DEVIS";
+    fifo_ajoute(&fifo_tache_aperiodic, 2);
+
+// *************************
+// TACHE DE FOND
+// *************************
+    active(cree(tachedefond, 64, NULL));
 
 
 	start();

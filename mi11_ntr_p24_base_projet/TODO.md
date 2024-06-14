@@ -1,5 +1,23 @@
-- quand on a plus de taches periodiques, on fait pas un noyau exit, on met tache_c à 64 ou 63???
+# DONE
 - on cree une TACHE tachedefond avec un id 64
+- dans tachedefond, on a la file des fonctions AP à executer par ordre de prio
+et on les parcourt et si elles sont actives, on les execute et on desactive
+tache_reset_flag_tick(id_tache) avec id_tache la noyau_get_tcb() ou 64 nan??
+
+- init la FIFO des taches AP
+- ajouter dans la FIFO les taches AP
+
+- quand on a plus de taches periodiques, on fait pas un noyau exit, on met tache_c à 64 ou 63???
+
+
+- définir une structure TACHE_AP qui contient une TACHE_ADR, des params et un flag actif
+typedef struct {
+	TACHE_ADR adr_tache;
+	void *params;
+} AP_TASK;
+
+# TODO
+
 - faire un creerTacheAP(TACHE_ADR adr, void* params) c'est comme cree
 void creerTacheAperiodique(TACHE_ADR adr, int16_t id, char* name, void *params){
 	_lock_();
@@ -16,17 +34,9 @@ void creerTacheAperiodique(TACHE_ADR adr, int16_t id, char* name, void *params){
 	_unlock_();
 }
 
-- définir une structure TACHE_AP qui contient une TACHE_ADR, des params et un flag actif
-typedef struct {
-	TACHE_ADR adr_tache;
-	void *params;
-	uint8_t active;
-} AP_TASK;
 
 - définir un tableau de TACHE_AP ap_task_list[MAX_AP_TASKS] et un compteur ap_task_count
 
 - une fonction tacheAP comme tacheGEN, mais pour les taches aperiodiques avec un arg(void*), dedans on fait un print, et on delay_n_ticks
 
-- dans tachedefond, on a la file des fonctions AP à executer par ordre de prio
-et on les parcourt et si elles sont actives, on les execute et on desactive
-tache_reset_flag_tick(id_tache) avec id_tache la noyau_get_tcb() ou 64 nan??
+- gerer le cas ou la tache AP doit etre interrompue par une tache P

@@ -25,7 +25,7 @@
 /*--------------------------------------------------------------------------*
  *            Variables internes du noyau                                   *
  *--------------------------------------------------------------------------*/
-static int compteurs[MAX_TACHES_NOYAU];                      /* Compteurs d'activations               */
+static int compteurs[MAX_TACHES_NOYAU+1];                      /* Compteurs d'activations               */
 NOYAU_TCB _noyau_tcb[MAX_TACHES_NOYAU];                      /* tableau des contextes                 */
 NOYAU_TCB_APERIODIC _noyau_tcb_apperiodic[MAX_TACHES_NOYAU]; /* tableau des contextes pour les tâches apériodiques               */
 uint16_t _ap_cmpt = 0;
@@ -100,7 +100,7 @@ void start(uint16_t addr_tache)
     }
 
     /* Q2.6 : initialisation de la tache courante */
-    _tache_c = F_VIDE;
+    _tache_c = 63; // tache de fond
     /* initialisation de la file circulaire de gestion des tâches           */
     file_init();
     /* Q2.7 : initialisation de la variable _tos sommet de la pile           */
@@ -115,7 +115,7 @@ void start(uint16_t addr_tache)
     systick_irq_enable();
     /* Q2.11 : creation et activation de la premiere tache                          */
     active(cree(tachedefond, 63, NULL));
-    active_aperiodic(cree_aperiodic(tachedefond, NULL));
+
 
     /* Q2.12 : on autorise les interruptions */
     _irq_enable_();
@@ -240,39 +240,39 @@ void active(uint16_t tache)
     _unlock_();
 }
 
-void active_aperiodic(uint16_t tache)
-{
-    NOYAU_TCB_APERIODIC *p = &_noyau_tcb[tache]; /* acces au contexte tache             */
+// void active_aperiodic(uint16_t tache)
+// {
+//     NOYAU_TCB_APERIODIC *p = &_noyau_tcb[tache]; /* acces au contexte tache             */
 
-    /* Q2.22 : verifie que la tache n'est pas dans l'etat NCREE, sinon arrete le noyau*/
-    if (p->status == NCREE)
-    {
-        noyau_exit(); /* sortie du noyau                      */
-    }
+//     /* Q2.22 : verifie que la tache n'est pas dans l'etat NCREE, sinon arrete le noyau*/
+//     if (p->status == NCREE)
+//     {
+//         noyau_exit(); /* sortie du noyau                      */
+//     }
 
-    /* Q2.23 : debut section critique */
-    _lock_();
+//     /* Q2.23 : debut section critique */
+//     _lock_();
 
-    /* Q2.24 : activation de la tache seulement si elle est a l'état CREE    */
-    if (p->status == CREE)
-    { /* n'active que si receptif  */
-        /* Créer un contexte initial en haut de la pile de la nouvelle tâche */
-        p->sp_start = p->sp_ini - sizeof(CONTEXTE_CPU_BASE); /* Réserver la Place pour
-                                                                le contexte sur la pile de la tâche */
-        p->sp_start &= 0xfffffff8;                           /* Aligner au multiple de 8 inférieur   */
-        CONTEXTE_CPU_BASE *c = (CONTEXTE_CPU_BASE *)p->sp_start;
-        c->pc = ((uint32_t)p->task_adr) & THUMB_ADDRESS_MASK; /* Adresse de la tâche dans pc, attention au bit de poids faible*/
-        c->lr = ((uint32_t)p->task_adr);                      /* Adresse de retour de la tâche dans lr */
-        c->lr_exc = TASK_EXC_RETURN;                          /* veleur initiale de retour d'exeption dans lr_exc */
-        c->psr = TASK_PSR;                                    /* veleur initiale des flags dans psr    */
+//     /* Q2.24 : activation de la tache seulement si elle est a l'état CREE    */
+//     if (p->status == CREE)
+//     { /* n'active que si receptif  */
+//         /* Créer un contexte initial en haut de la pile de la nouvelle tâche */
+//         p->sp_start = p->sp_ini - sizeof(CONTEXTE_CPU_BASE); /* Réserver la Place pour
+//                                                                 le contexte sur la pile de la tâche */
+//         p->sp_start &= 0xfffffff8;                           /* Aligner au multiple de 8 inférieur   */
+//         CONTEXTE_CPU_BASE *c = (CONTEXTE_CPU_BASE *)p->sp_start;
+//         c->pc = ((uint32_t)p->task_adr) & THUMB_ADDRESS_MASK; /* Adresse de la tâche dans pc, attention au bit de poids faible*/
+//         c->lr = ((uint32_t)p->task_adr);                      /* Adresse de retour de la tâche dans lr */
+//         c->lr_exc = TASK_EXC_RETURN;                          /* veleur initiale de retour d'exeption dans lr_exc */
+//         c->psr = TASK_PSR;                                    /* veleur initiale des flags dans psr    */
 
-        p->status = PRET;   /* changement d'etat, mise a l'etat PRET */
-        file_ajoute(tache); /* ajouter la tache dans la liste        */
-        scheduler();        /* activation d'une tache prete          */
-    }
-    /* Q2.25 : fin section critique */
-    _unlock_();
-}
+//         p->status = PRET;   /* changement d'etat, mise a l'etat PRET */
+//         file_ajoute(tache); /* ajouter la tache dans la liste        */
+//         scheduler();        /* activation d'une tache prete          */
+//     }
+//     /* Q2.25 : fin section critique */
+//     _unlock_();
+// }
 
 /*--------------------------------------------------------------------------*
  *                  ORDONNANCEUR preemptif optimise                         *
@@ -310,9 +310,8 @@ uint32_t task_switch(uint32_t sp)
     {
         printf("Plus rien à ordonnancer.\n");
 
-        active_aperiodic(tachedefond);
+        _tache_c = 63;
 
-        // noyau_exit(); /* Sortie du noyau                          */
     }
 
     compteurs[_tache_c]++; /* MAJ compteur d'activations               */
@@ -460,14 +459,21 @@ void flag_tick_process(void)
 
 
 
-void tachedefond(void)
+TACHE tachedefond(void) // ordonnanceur des taches aperiodiques
 {
-    SET_CURSOR_POSITION(3, 1);
-    puts("------> EXEC tache de fond");
-
+    printf("tache de fond\n");
 
     // ici on execute les taches aperiodiques
-    
-    while (1){};
+    int* index_to_execute;
+    if (fifo_retire(&fifo_tache_aperiodic, index_to_execute) == -1) 
+    {
+        // exec
+        tab_tache_aperiodic[index_to_execute].adr(tab_tache_aperiodic[index_to_execute].params);
+    }
+    else 
+    {
+        printf("fifo empty, NOYAU EXIT\n");
+        noyau_exit();
+    }   
 }
 

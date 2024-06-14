@@ -133,4 +133,27 @@ void tache_reset_flag_tick(uint16_t id_tache);
 void tache_set_flag_tick(uint16_t id_tache);
 void flag_tick_process(void);
 
+
+// APERIODIQUES
+#define MAX_TACHES_APERIODIC 8
+
+// Structure de la tache aperiodique
+typedef struct
+{
+  TACHE_ADR adr;
+  char* name;
+  void *params;
+} TACHE_APERIODIC;
+
+// Tableau des taches aperiodiques
+TACHE_APERIODIC tab_tache_aperiodic[MAX_TACHES_APERIODIC];
+
+// FIFO des taches AP
+FIFO fifo_tache_aperiodic; // les indices des taches aperiodiques dans le tableau tab_tache_aperiodic
+
+/*
+ on a la FIFO qui donne l'index de la tache AP a executer dans le tableau tab_tache_aperiodic
+ tab_tache_aperiodic contient les structures TACHE_APERIODIC
+*/
+
 #endif
