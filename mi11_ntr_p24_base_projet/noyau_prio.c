@@ -312,7 +312,7 @@ uint32_t task_switch(uint32_t sp)
 
         active_aperiodic(tachedefond);
 
-        noyau_exit(); /* Sortie du noyau                          */
+        // noyau_exit(); /* Sortie du noyau                          */
     }
 
     compteurs[_tache_c]++; /* MAJ compteur d'activations               */

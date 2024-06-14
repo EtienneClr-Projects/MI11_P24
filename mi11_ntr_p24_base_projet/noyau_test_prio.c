@@ -17,16 +17,15 @@
 uint16_t pos_x = 1;
 uint16_t pos_y = 10;
 
-typedef struct
-{
-	// adresse de debut de la tache
+typedef struct {
+	// temps de la tache
 	uint16_t Nb_tour;
-	// etat courant de la tache
+	// temps entre deux taches
 	uint16_t wait_time;
 } NOYAU_TCB_ADD;
 
 TACHE tachedefond(void);
-TACHE tacheGen(void);
+TACHE tachePeriodique(void);
 
 #define MAX_CARA_LIGNE 80
 #define POS_CHRONO 10
@@ -49,57 +48,59 @@ int main()
 	
 	
     uint16_t id;
-	
-	id = 3;
+// *************************
+// TACHES PERIODIQUES
+// *************************
+    //PAUSE DEJEUNER
+	id = 1; // premiere liste de 0 à 7
+    _noyau_tcb_add[id].Nb_tour = 1; // equivalent 1h
+    _noyau_tcb_add[id].wait_time = 1000; // equivalent 24h
+    active(cree(tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
+
+    //REUNION DE CHANTIER
+    id = 8; // deuxieme liste de 8 à 15
+    _noyau_tcb_add[id].Nb_tour = 2;
+    _noyau_tcb_add[id].wait_time = 3000;
+    active(cree(tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
+
+    //TRAVAILLER SUR LE CHANTIER
+    id = 16; // troisieme liste de 16 à 23
+    _noyau_tcb_add[id].Nb_tour = 4;
+    _noyau_tcb_add[id].wait_time = 1000;
+    active(cree(tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
+
+    //CONTROLER LES OUTILS
+    id = 17; // troisieme liste de 16 à 23
     _noyau_tcb_add[id].Nb_tour = 1;
-    _noyau_tcb_add[id].wait_time = 100;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
-    id = 8;
-    _noyau_tcb_add[id].Nb_tour = 2;
-    _noyau_tcb_add[id].wait_time = 50;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
-    id = 16;
-    _noyau_tcb_add[id].Nb_tour = 4;
-    _noyau_tcb_add[id].wait_time = 60;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
-    id = 18;
-    _noyau_tcb_add[id].Nb_tour = 4;
-    _noyau_tcb_add[id].wait_time = 40;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
-    id = 24;
-    _noyau_tcb_add[id].Nb_tour = 3;
-    _noyau_tcb_add[id].wait_time = 15;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
-    id = 31;
-    _noyau_tcb_add[id].Nb_tour = 3;
-    _noyau_tcb_add[id].wait_time = 15;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
-    id = 32;
-    _noyau_tcb_add[id].Nb_tour = 2;
-    _noyau_tcb_add[id].wait_time = 10;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
-    id = 37;
-    _noyau_tcb_add[id].Nb_tour = 3;
-    _noyau_tcb_add[id].wait_time = 10;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
-    id = 40;
-    _noyau_tcb_add[id].Nb_tour = 3;
-    _noyau_tcb_add[id].wait_time = 5;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
-    id = 48;
-    _noyau_tcb_add[id].Nb_tour = 5;
-    _noyau_tcb_add[id].wait_time = 2;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
-    id = 56;
-    _noyau_tcb_add[id].Nb_tour = 5;
-    _noyau_tcb_add[id].wait_time = 1;
-    active(cree(tacheGen, id, (void *)&_noyau_tcb_add[id]));
+    _noyau_tcb_add[id].wait_time = 1000;
+    active(cree(tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
+
+    //REPOS
+    id = 24; // quatrieme liste de 24 à 31
+    _noyau_tcb_add[id].Nb_tour = 8;
+    _noyau_tcb_add[id].wait_time = 1000;
+    active(cree(tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
+
+    //CHECKER LA BOITE MAIL
+    id = 25; // quatrieme liste de 24 à 31
+    _noyau_tcb_add[id].Nb_tour = 1;
+    _noyau_tcb_add[id].wait_time = 1000;
+    active(cree(tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
+
+// *************************
+// TACHES APERIODIQUES
+// *************************
+
+    //ACHETER DES OUTILS
+
+
+
 
 	start();
   return(0);
 }
 
-TACHE tacheGen(void)
+TACHE tachePeriodique(void)
 {
     volatile NOYAU_TCB *p_tcb = NULL;
     volatile uint16_t id_tache;

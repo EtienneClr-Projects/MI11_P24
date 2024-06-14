@@ -89,8 +89,8 @@ typedef TACHE (*TACHE_ADR)(void); /* pointeur de taches      */
 typedef struct
 {
   uint16_t status;    /* etat courant de la tache        */
-  uint32_t sp_ini;    /* valeur initiale de sp           */
-  uint32_t sp_start;  /* valeur de base de sp pour la tache */
+  uint32_t sp_ini;    /* valeur initiale de sp           */ // SP c'est le stack pointer, donc l'adresse de la pile
+  uint32_t sp_start;  /* valeur de base de sp pour la tache */ 
   uint32_t sp;        /* valeur courante de sp           */
   TACHE_ADR task_adr; /* Pointeur de la fonction de tâche*/
   uint16_t prio;      /* priorité de la tâche */
