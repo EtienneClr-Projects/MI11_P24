@@ -11,6 +11,7 @@
 #define __NOYAU_H__
 
 #include <stdint.h>
+#include "FIFO.h"
 
 /* Les constantes */
 /******************/
@@ -81,7 +82,7 @@ typedef struct __attribute__((packed, aligned(4)))
 /************************/
 
 #define TACHE void
-typedef TACHE (*TACHE_ADR)(void); /* pointeur de taches      */
+typedef TACHE (*TACHE_ADR)(void*); /* pointeur de taches      */
 
 /* definition du contexte d'une tache */
 /**************************************/
@@ -115,15 +116,16 @@ typedef struct
 /* Prototype des fonctions */
 /***************************/
 
+
 void noyau_exit(void);
 void fin_tache(void);
 uint16_t cree(TACHE_ADR adr_tache, uint16_t id, void *add);
-uint16_t cree_aperiodic(TACHE_ADR adr_tache, void *add);
+uint16_t cree_aperiodic(TACHE_ADR adr_tache,uint16_t id, void *add);
 void active(uint16_t tache);
 void active_aperiodic(uint16_t tache);
 void schedule(void);
 void scheduler(void);
-void start(void);
+void start(TACHE_ADR tache);
 void dort(void);
 void reveille(uint16_t tache);
 uint16_t noyau_get_tc(void);
@@ -150,6 +152,7 @@ TACHE_APERIODIC tab_tache_aperiodic[MAX_TACHES_APERIODIC];
 
 // FIFO des taches AP
 FIFO fifo_tache_aperiodic; // les indices des taches aperiodiques dans le tableau tab_tache_aperiodic
+typedef TACHE (*TACHE_AP_ADR)(TACHE_APERIODIC*); /* pointeur de taches      */
 
 /*
  on a la FIFO qui donne l'index de la tache AP a executer dans le tableau tab_tache_aperiodic
