@@ -13,6 +13,7 @@
 #include "delay.h"
 #include "TERMINAL.h"
 
+int temp = 0;
 
 uint16_t pos_x = 1;
 uint16_t pos_y = 10;
@@ -26,12 +27,82 @@ typedef struct {
 
 
 TACHE tachePeriodique(void);
+TACHE tachedefond(void);
+void init_periodique_tache(void);
 
 #define MAX_CARA_LIGNE 80
 #define POS_CHRONO 10
 
 NOYAU_TCB_ADD _noyau_tcb_add[MAX_TACHES_NOYAU];
 
+void init_periodique_tache(void)
+{
+	_lock_();
+
+	 if (temp == 0) {
+		 uint16_t id;
+		// *************************
+		// TACHES PERIODIQUES
+		// *************************
+		//PAUSE DEJEUNER
+		id = 1; // premiere liste de 0 à 7
+		_noyau_tcb_add[id].Nb_tour = 1; // equivalent 1h
+		_noyau_tcb_add[id].wait_time = 1000; // equivalent 24h
+		active(cree((TACHE_ADR)tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
+//		printf("creer pause dejeuner");
+
+		/*
+		id = 30; // premiere liste de 0 à 7
+		_noyau_tcb_add[id].Nb_tour = 1; // equivalent 1h
+		_noyau_tcb_add[id].wait_time = 10; // equivalent 24h
+		active(cree((TACHE_ADR)tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
+		puts("on est la");
+		*/
+		//REUNION DE CHANTIER
+		id = 8; // deuxieme liste de 8 à 15
+		_noyau_tcb_add[id].Nb_tour = 2;
+		_noyau_tcb_add[id].wait_time = 3000;
+		active(cree((TACHE_ADR)tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
+
+		//TRAVAILLER SUR LE CHANTIER
+		id = 16; // troisieme liste de 16 à 23
+		_noyau_tcb_add[id].Nb_tour = 4;
+		_noyau_tcb_add[id].wait_time = 1000;
+		active(cree((TACHE_ADR)tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
+
+		//CONTROLER LES OUTILS
+		id = 17; // troisieme liste de 16 à 23
+		_noyau_tcb_add[id].Nb_tour = 1;
+		_noyau_tcb_add[id].wait_time = 1000;
+		active(cree((TACHE_ADR)tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
+
+		//REPOS
+		id = 24; // quatrieme liste de 24 à 31
+		_noyau_tcb_add[id].Nb_tour = 8;
+		_noyau_tcb_add[id].wait_time = 1000;
+		active(cree((TACHE_ADR)tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
+
+		//CHECKER LA BOITE MAIL
+		id = 25; // quatrieme liste de 24 à 31
+		_noyau_tcb_add[id].Nb_tour = 1;
+		_noyau_tcb_add[id].wait_time = 1000;
+		active(cree((TACHE_ADR)tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
+		printf("creer boit mail\n");
+
+		id = 63; // quatrieme liste de 24 à 31
+		_noyau_tcb_add[id].Nb_tour = 1;
+		_noyau_tcb_add[id].wait_time = 60;
+		active(cree((TACHE_ADR)tachedefond, id, (void *)&_noyau_tcb_add[id]));
+		printf("on a créé la tache de fond\n");
+
+	 }
+
+//	 while(1) {};
+
+	 temp = 1;
+	 _unlock_();
+
+}
 
 int main()
 {
@@ -45,77 +116,40 @@ int main()
     puts("Noyau preemptif");
     SET_CURSOR_POSITION(5,1);
     SAVE_CURSOR_POSITION();
-	
-	
-    uint16_t id;
-// *************************
-// TACHES PERIODIQUES
-// *************************
-    //PAUSE DEJEUNER
-	id = 1; // premiere liste de 0 à 7
-    _noyau_tcb_add[id].Nb_tour = 1; // equivalent 1h
-    _noyau_tcb_add[id].wait_time = 1000; // equivalent 24h
-    active(cree((TACHE_ADR)tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
-    printf("creer pause dejeuner");
-    //REUNION DE CHANTIER
-    id = 8; // deuxieme liste de 8 à 15
-    _noyau_tcb_add[id].Nb_tour = 2;
-    _noyau_tcb_add[id].wait_time = 3000;
-    active(cree(tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
+    start((TACHE_ADR)init_periodique_tache);
+    init_periodique_tache();
 
-    //TRAVAILLER SUR LE CHANTIER
-    id = 16; // troisieme liste de 16 à 23
-    _noyau_tcb_add[id].Nb_tour = 4;
-    _noyau_tcb_add[id].wait_time = 1000;
-    active(cree(tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
 
-    //CONTROLER LES OUTILS
-    id = 17; // troisieme liste de 16 à 23
-    _noyau_tcb_add[id].Nb_tour = 1;
-    _noyau_tcb_add[id].wait_time = 1000;
-    active(cree(tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
 
-    //REPOS
-    id = 24; // quatrieme liste de 24 à 31
-    _noyau_tcb_add[id].Nb_tour = 8;
-    _noyau_tcb_add[id].wait_time = 1000;
-    active(cree(tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
-
-    //CHECKER LA BOITE MAIL
-    id = 25; // quatrieme liste de 24 à 31
-    _noyau_tcb_add[id].Nb_tour = 1;
-    _noyau_tcb_add[id].wait_time = 1000;
-    active(cree(tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
-    printf("creer boit mail");
-// *************************
-// TACHES APERIODIQUES
-// *************************
-// INIT FIFO
-    fifo_init(&fifo_tache_aperiodic);
-    printf("fifoinit");
-    //ACHETER DES OUTILS
-    tab_tache_aperiodic[0].adr = tachePeriodique;
-    tab_tache_aperiodic[0].name = "ACHETER DES OUTILS";
-    // init params??? TODO
-    fifo_ajoute(&fifo_tache_aperiodic, 0);
-    printf("tache ap 1");
-    //FAIRE L'ADMINISTRATIF
-    tab_tache_aperiodic[1].adr = tachePeriodique;
-    tab_tache_aperiodic[1].name = "FAIRE L'ADMINISTRATIF";
-    fifo_ajoute(&fifo_tache_aperiodic, 1);
-
-    //FAIRE DES DEVIS
-    tab_tache_aperiodic[2].adr = tachePeriodique;
-    tab_tache_aperiodic[2].name = "FAIRE DES DEVIS";
-    fifo_ajoute(&fifo_tache_aperiodic, 2);
+    //    init_periodique_tache();
+//
+//
+//// *************************
+//// TACHES APERIODIQUES
+//// *************************
+//// INIT FIFO
+//    fifo_init(&fifo_tache_aperiodic);
+//    printf("fifoinit");
+//    //ACHETER DES OUTILS
+//    tab_tache_aperiodic[0].adr = tachePeriodique;
+//    tab_tache_aperiodic[0].name = "ACHETER DES OUTILS";
+//    // init params??? TODO
+//    fifo_ajoute(&fifo_tache_aperiodic, 0);
+//    printf("tache ap 1");
+//    //FAIRE L'ADMINISTRATIF
+//    tab_tache_aperiodic[1].adr = tachePeriodique;
+//    tab_tache_aperiodic[1].name = "FAIRE L'ADMINISTRATIF";
+//    fifo_ajoute(&fifo_tache_aperiodic, 1);
+//
+//    //FAIRE DES DEVIS
+//    tab_tache_aperiodic[2].adr = tachePeriodique;
+//    tab_tache_aperiodic[2].name = "FAIRE DES DEVIS";
+//    fifo_ajoute(&fifo_tache_aperiodic, 2);
 
 // *************************
 // TACHE DE FOND
 // *************************
-    active(cree(tachedefond, 64, NULL));
-    printf("apres active tachedefond");
 
-	start();
   return(0);
 }
 
@@ -175,4 +209,26 @@ TACHE tachePeriodique(void)
             tache_reset_flag_tick(id_tache);
         }
     }
+}
+
+
+TACHE tachedefond(void) // ordonnanceur des taches aperiodiques
+{
+
+	while(1) {
+		printf("tache de fond\n");
+		// ici on execute les taches aperiodiques
+		uint8_t index_to_execute;
+		if (fifo_retire(&fifo_tache_aperiodic, (uint8_t*)&index_to_execute) == -1)
+		{
+			// exec
+			((TACHE_ADR)tab_tache_aperiodic[index_to_execute].adr)(tab_tache_aperiodic[index_to_execute].params);
+			// ((TACHE_ADR)tab_tache_aperiodic[index_to_execute].adr)(tab_tache_aperiodic[index_to_execute].params);
+		}
+		else
+		{
+			printf("fifo empty \n");
+		}
+	}
+
 }

@@ -125,7 +125,7 @@ void active(uint16_t tache);
 void active_aperiodic(uint16_t tache);
 void schedule(void);
 void scheduler(void);
-void start(void);
+void start(TACHE_ADR tache);
 void dort(void);
 void reveille(uint16_t tache);
 uint16_t noyau_get_tc(void);
@@ -152,9 +152,6 @@ TACHE_APERIODIC tab_tache_aperiodic[MAX_TACHES_APERIODIC];
 
 // FIFO des taches AP
 FIFO fifo_tache_aperiodic; // les indices des taches aperiodiques dans le tableau tab_tache_aperiodic
-
-
-TACHE tachedefond(void);
 
 /*
  on a la FIFO qui donne l'index de la tache AP a executer dans le tableau tab_tache_aperiodic

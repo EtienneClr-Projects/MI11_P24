@@ -87,7 +87,7 @@ void fin_tache(void)
  * sortie : sans
  * description : active la tache et lance le scheduler
  */
-void start(void)
+void start(TACHE_ADR tache)
 {
     uint16_t j;
     register unsigned int sp asm("sp");
@@ -100,7 +100,6 @@ void start(void)
     }
 
     /* Q2.6 : initialisation de la tache courante */
-    _tache_c = 63; // tache de fond
     /* initialisation de la file circulaire de gestion des tâches           */
     file_init();
     /* Q2.7 : initialisation de la variable _tos sommet de la pile           */
@@ -114,7 +113,8 @@ void start(void)
     /* Q2.10 : initialisation de l'interruption systick  (voir cortex.c) */
     systick_irq_enable();
     /* Q2.11 : creation et activation de la premiere tache                          */
-    active(cree(tachedefond, 63, NULL));
+
+//    active(cree(tache, 62, NULL));
 
 
     /* Q2.12 : on autorise les interruptions */
@@ -140,10 +140,12 @@ uint16_t cree(TACHE_ADR adr_tache, uint16_t id, void *add)
     /* Q2.16 : arret du noyau si plus de MAX_TACHES^*/
     if (id >= MAX_TACHES_NOYAU)
     {
+    	printf("Noyaux exit cree 1\n");
         noyau_exit();
     }
     if (_noyau_tcb[id].status != NCREE)
     {
+    	printf("Noyau exit cree 22222\n");
         noyau_exit();
     }
     /* creation du contexte de la nouvelle tache */
@@ -164,7 +166,6 @@ uint16_t cree(TACHE_ADR adr_tache, uint16_t id, void *add)
     p->status = CREE;
     /* Q2.21 : fin section critique */
     _unlock_();
-    printf("%d", id);
     return (id); /* tache est un uint16_t */
 }
 
@@ -213,6 +214,7 @@ void active(uint16_t tache)
     /* Q2.22 : verifie que la tache n'est pas dans l'etat NCREE, sinon arrete le noyau*/
     if (p->status == NCREE)
     {
+    	printf("Noyaux exit active");
         noyau_exit(); /* sortie du noyau                      */
     }
 
@@ -228,8 +230,6 @@ void active(uint16_t tache)
         p->sp_start &= 0xfffffff8;                           /* Aligner au multiple de 8 inférieur   */
         CONTEXTE_CPU_BASE *c = (CONTEXTE_CPU_BASE *)p->sp_start;
         c->pc = ((uint32_t)p->task_adr) & THUMB_ADDRESS_MASK; /* Adresse de la tâche dans pc, attention au bit de poids faible*/
-        uint32_t ddd = ((uint32_t)p->task_adr) & THUMB_ADDRESS_MASK;
-        printf("%d", ddd);
         c->lr = ((uint32_t)p->task_adr);                      /* Adresse de retour de la tâche dans lr */
         c->lr_exc = TASK_EXC_RETURN;                          /* veleur initiale de retour d'exeption dans lr_exc */
         c->psr = TASK_PSR;                                    /* veleur initiale des flags dans psr    */
@@ -313,7 +313,7 @@ uint32_t task_switch(uint32_t sp)
     {
         printf("Plus rien à ordonnancer.\n");
 
-        _tache_c = 63;
+        _tache_c = 62;
 
     }
 
@@ -460,24 +460,4 @@ void flag_tick_process(void)
     }
 }
 
-
-
-TACHE tachedefond(void) // ordonnanceur des taches aperiodiques
-{
-    printf("tache de fond\n");
-
-    // ici on execute les taches aperiodiques
-    uint8_t index_to_execute;
-    if (fifo_retire(&fifo_tache_aperiodic, (uint8_t*)&index_to_execute) == -1)
-    {
-        // exec
-        ((TACHE_ADR)tab_tache_aperiodic[index_to_execute].adr)(tab_tache_aperiodic[index_to_execute].params);
-//        ((TACHE_ADR)tab_tache_aperiodic[index_to_execute].adr)(tab_tache_aperiodic[index_to_execute].params);
-    }
-    else 
-    {
-        printf("fifo empty, NOYAU EXIT\n");
-        noyau_exit();
-    }   
-}
 
