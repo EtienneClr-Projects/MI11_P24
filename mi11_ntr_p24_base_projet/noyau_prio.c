@@ -87,7 +87,7 @@ void fin_tache(void)
  * sortie : sans
  * description : active la tache et lance le scheduler
  */
-void start(uint16_t addr_tache)
+void start(void)
 {
     uint16_t j;
     register unsigned int sp asm("sp");
@@ -164,7 +164,7 @@ uint16_t cree(TACHE_ADR adr_tache, uint16_t id, void *add)
     p->status = CREE;
     /* Q2.21 : fin section critique */
     _unlock_();
-
+    printf("%d", id);
     return (id); /* tache est un uint16_t */
 }
 
@@ -228,11 +228,14 @@ void active(uint16_t tache)
         p->sp_start &= 0xfffffff8;                           /* Aligner au multiple de 8 inférieur   */
         CONTEXTE_CPU_BASE *c = (CONTEXTE_CPU_BASE *)p->sp_start;
         c->pc = ((uint32_t)p->task_adr) & THUMB_ADDRESS_MASK; /* Adresse de la tâche dans pc, attention au bit de poids faible*/
+        uint32_t ddd = ((uint32_t)p->task_adr) & THUMB_ADDRESS_MASK;
+        printf("%d", ddd);
         c->lr = ((uint32_t)p->task_adr);                      /* Adresse de retour de la tâche dans lr */
         c->lr_exc = TASK_EXC_RETURN;                          /* veleur initiale de retour d'exeption dans lr_exc */
         c->psr = TASK_PSR;                                    /* veleur initiale des flags dans psr    */
 
         p->status = PRET;   /* changement d'etat, mise a l'etat PRET */
+
         file_ajoute(tache); /* ajouter la tache dans la liste        */
         scheduler();        /* activation d'une tache prete          */
     }
@@ -464,11 +467,12 @@ TACHE tachedefond(void) // ordonnanceur des taches aperiodiques
     printf("tache de fond\n");
 
     // ici on execute les taches aperiodiques
-    int* index_to_execute;
-    if (fifo_retire(&fifo_tache_aperiodic, index_to_execute) == -1) 
+    uint8_t index_to_execute;
+    if (fifo_retire(&fifo_tache_aperiodic, (uint8_t*)&index_to_execute) == -1)
     {
         // exec
-        tab_tache_aperiodic[index_to_execute].adr(tab_tache_aperiodic[index_to_execute].params);
+        ((TACHE_ADR)tab_tache_aperiodic[index_to_execute].adr)(tab_tache_aperiodic[index_to_execute].params);
+//        ((TACHE_ADR)tab_tache_aperiodic[index_to_execute].adr)(tab_tache_aperiodic[index_to_execute].params);
     }
     else 
     {

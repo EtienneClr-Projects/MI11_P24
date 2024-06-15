@@ -24,7 +24,7 @@ typedef struct {
 	uint16_t wait_time;
 } NOYAU_TCB_ADD;
 
-TACHE tachedefond(void);
+
 TACHE tachePeriodique(void);
 
 #define MAX_CARA_LIGNE 80
@@ -55,8 +55,8 @@ int main()
 	id = 1; // premiere liste de 0 à 7
     _noyau_tcb_add[id].Nb_tour = 1; // equivalent 1h
     _noyau_tcb_add[id].wait_time = 1000; // equivalent 24h
-    active(cree(tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
-
+    active(cree((TACHE_ADR)tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
+    printf("creer pause dejeuner");
     //REUNION DE CHANTIER
     id = 8; // deuxieme liste de 8 à 15
     _noyau_tcb_add[id].Nb_tour = 2;
@@ -86,19 +86,19 @@ int main()
     _noyau_tcb_add[id].Nb_tour = 1;
     _noyau_tcb_add[id].wait_time = 1000;
     active(cree(tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
-
+    printf("creer boit mail");
 // *************************
 // TACHES APERIODIQUES
 // *************************
 // INIT FIFO
     fifo_init(&fifo_tache_aperiodic);
-
+    printf("fifoinit");
     //ACHETER DES OUTILS
     tab_tache_aperiodic[0].adr = tachePeriodique;
     tab_tache_aperiodic[0].name = "ACHETER DES OUTILS";
     // init params??? TODO
     fifo_ajoute(&fifo_tache_aperiodic, 0);
-
+    printf("tache ap 1");
     //FAIRE L'ADMINISTRATIF
     tab_tache_aperiodic[1].adr = tachePeriodique;
     tab_tache_aperiodic[1].name = "FAIRE L'ADMINISTRATIF";
@@ -113,7 +113,7 @@ int main()
 // TACHE DE FOND
 // *************************
     active(cree(tachedefond, 64, NULL));
-
+    printf("apres active tachedefond");
 
 	start();
   return(0);
