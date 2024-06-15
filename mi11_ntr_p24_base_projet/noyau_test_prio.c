@@ -27,6 +27,7 @@ typedef struct {
 
 
 TACHE tachePeriodique(void);
+TACHE tacheAPeriodique(void* params);
 TACHE tachedefond(void);
 void init_periodique_tache(void);
 
@@ -38,8 +39,7 @@ NOYAU_TCB_ADD _noyau_tcb_add[MAX_TACHES_NOYAU];
 void init_periodique_tache(void)
 {
 	_lock_();
-
-	 if (temp == 0) {
+	if (temp == 0) {
 		 uint16_t id;
 		// *************************
 		// TACHES PERIODIQUES
@@ -98,9 +98,8 @@ void init_periodique_tache(void)
 	 }
 
 //	 while(1) {};
-
-	 temp = 1;
-	 _unlock_();
+	temp = 1;
+	_unlock_();
 
 }
 
@@ -116,9 +115,9 @@ int main()
     puts("Noyau preemptif");
     SET_CURSOR_POSITION(5,1);
     SAVE_CURSOR_POSITION();
-    start((TACHE_ADR)init_periodique_tache);
-    init_periodique_tache();
 
+
+    start((TACHE_ADR)init_periodique_tache);
 
 
     //    init_periodique_tache();
@@ -128,29 +127,33 @@ int main()
 //// TACHES APERIODIQUES
 //// *************************
 //// INIT FIFO
-//    fifo_init(&fifo_tache_aperiodic);
-//    printf("fifoinit");
+    fifo_init(&fifo_tache_aperiodic);
+    printf("fifoinit\n");
 //    //ACHETER DES OUTILS
-//    tab_tache_aperiodic[0].adr = tachePeriodique;
-//    tab_tache_aperiodic[0].name = "ACHETER DES OUTILS";
+    tab_tache_aperiodic[0].adr = (TACHE_ADR)tacheAPeriodique;
+    tab_tache_aperiodic[0].name = "ACHETER DES OUTILS";
 //    // init params??? TODO
-//    fifo_ajoute(&fifo_tache_aperiodic, 0);
+    active_aperiodic(cree_aperiodic((TACHE_ADR)tacheAPeriodique,0, NULL));
+    fifo_ajoute(&fifo_tache_aperiodic, 0);
 //    printf("tache ap 1");
 //    //FAIRE L'ADMINISTRATIF
-//    tab_tache_aperiodic[1].adr = tachePeriodique;
+//    tab_tache_aperiodic[1].adr = tacheAPeriodique;
 //    tab_tache_aperiodic[1].name = "FAIRE L'ADMINISTRATIF";
 //    fifo_ajoute(&fifo_tache_aperiodic, 1);
-//
+
 //    //FAIRE DES DEVIS
-//    tab_tache_aperiodic[2].adr = tachePeriodique;
+//    tab_tache_aperiodic[2].adr = tacheAPeriodique;
 //    tab_tache_aperiodic[2].name = "FAIRE DES DEVIS";
 //    fifo_ajoute(&fifo_tache_aperiodic, 2);
 
 // *************************
 // TACHE DE FOND
 // *************************
+    init_periodique_tache();
 
-  return(0);
+    schedule();
+    while(1){}
+    return(0);
 }
 
 TACHE tachePeriodique(void)
@@ -216,7 +219,6 @@ TACHE tachedefond(void) // ordonnanceur des taches aperiodiques
 {
 
 	while(1) {
-		printf("tache de fond\n");
 		// ici on execute les taches aperiodiques
 		uint8_t index_to_execute;
 		if (fifo_retire(&fifo_tache_aperiodic, (uint8_t*)&index_to_execute) == -1)
@@ -227,8 +229,14 @@ TACHE tachedefond(void) // ordonnanceur des taches aperiodiques
 		}
 		else
 		{
-			printf("fifo empty \n");
+//			printf("fifo empty \n");
 		}
 	}
 
+}
+
+TACHE tacheAPeriodique(void* params)
+{
+//   printf("%s\n",params->name);
+	printf("une tache aperiodique...\n");
 }
