@@ -152,6 +152,7 @@ TACHE_APERIODIC tab_tache_aperiodic[MAX_TACHES_APERIODIC];
 
 // FIFO des taches AP
 FIFO fifo_tache_aperiodic; // les indices des taches aperiodiques dans le tableau tab_tache_aperiodic
+typedef TACHE (*TACHE_AP_ADR)(TACHE_APERIODIC*); /* pointeur de taches      */
 
 /*
  on a la FIFO qui donne l'index de la tache AP a executer dans le tableau tab_tache_aperiodic
