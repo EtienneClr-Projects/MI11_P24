@@ -144,7 +144,7 @@ typedef struct
 {
   TACHE_ADR adr;
   char* name;
-  void *params;
+  char params[25];
 } TACHE_APERIODIC;
 
 // Tableau des taches aperiodiques

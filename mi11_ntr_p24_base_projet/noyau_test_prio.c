@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "stm32h7xx.h"
 #include "serialio.h"
@@ -31,7 +32,7 @@ TACHE tacheAPeriodique(TACHE_APERIODIC *tache);
 TACHE tachedefond(void);
 void init_periodique_tache(void);
 
-#define MAX_CARA_LIGNE 80
+#define MAX_CARA_LIGNE 190
 #define POS_CHRONO 10
 
 NOYAU_TCB_ADD _noyau_tcb_add[MAX_TACHES_NOYAU];
@@ -67,19 +68,19 @@ void init_periodique_tache(void)
 		//TRAVAILLER SUR LE CHANTIER
 		id = 16; // troisieme liste de 16 à 23
 		_noyau_tcb_add[id].Nb_tour = 4;
-		_noyau_tcb_add[id].wait_time = 100;
+		_noyau_tcb_add[id].wait_time = 300;
 		active(cree((TACHE_ADR)tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
 
 		//CONTROLER LES OUTILS
 		id = 17; // troisieme liste de 16 à 23
 		_noyau_tcb_add[id].Nb_tour = 1;
-		_noyau_tcb_add[id].wait_time = 100;
+		_noyau_tcb_add[id].wait_time = 300;
 		active(cree((TACHE_ADR)tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
 
 		//REPOS
 		id = 24; // quatrieme liste de 24 à 31
 		_noyau_tcb_add[id].Nb_tour = 8;
-		_noyau_tcb_add[id].wait_time = 100;
+		_noyau_tcb_add[id].wait_time = 300;
 		active(cree((TACHE_ADR)tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
 
 		//CHECKER LA BOITE MAIL
@@ -87,13 +88,13 @@ void init_periodique_tache(void)
 		_noyau_tcb_add[id].Nb_tour = 1;
 		_noyau_tcb_add[id].wait_time = 1000;
 		active(cree((TACHE_ADR)tachePeriodique, id, (void *)&_noyau_tcb_add[id]));
-		printf("creer boit mail\n");
+//		printf("creer boit mail\n");
 
 		id = 63; // quatrieme liste de 24 à 31
 		_noyau_tcb_add[id].Nb_tour = 1;
 		_noyau_tcb_add[id].wait_time = 60;
 		active(cree((TACHE_ADR)tachedefond, id, (void *)&_noyau_tcb_add[id]));
-		printf("on a créé la tache de fond\n");
+//		printf("on a créé la tache de fond\n");
 
 	 }
 
@@ -113,7 +114,7 @@ int main()
     SET_CURSOR_POSITION(1,1);
     puts("Test noyau");
     puts("Noyau preemptif");
-    SET_CURSOR_POSITION(5,1);
+    SET_CURSOR_POSITION(3,1);
     SAVE_CURSOR_POSITION();
 
 
@@ -128,12 +129,16 @@ int main()
 //// *************************
 //// INIT FIFO
     fifo_init(&fifo_tache_aperiodic);
-    printf("fifoinit\n");
+//    printf("fifoinit\n");
     //    //ACHETER DES OUTILS
     uint16_t id;
     id = 0;
 	tab_tache_aperiodic[id].adr = (TACHE_ADR)tacheAPeriodique;
 	tab_tache_aperiodic[id].name = "ACHETER DES OUTILS";
+	char chaine[24] = "J'ai achete des outils !";
+	for (int j=0;j<25;j++) {
+		tab_tache_aperiodic[id].params[j] = chaine[j];
+	}
 	active_aperiodic(cree_aperiodic((TACHE_ADR)tacheAPeriodique, id, NULL));
 	fifo_ajoute(&fifo_tache_aperiodic, id);
 
@@ -141,6 +146,10 @@ int main()
 	id = 1;
     tab_tache_aperiodic[id].adr = (TACHE_ADR)tacheAPeriodique;
     tab_tache_aperiodic[id].name = "FAIRE L'ADMINISTRATIF";
+	char chaine2[24] = "J'ai fait de l'admin !";
+	for (int j=0;j<25;j++) {
+		tab_tache_aperiodic[id].params[j] = chaine2[j];
+	}
     active_aperiodic(cree_aperiodic((TACHE_ADR)tacheAPeriodique, id, NULL));
 	fifo_ajoute(&fifo_tache_aperiodic, id);
 
@@ -148,6 +157,10 @@ int main()
 	id = 2;
     tab_tache_aperiodic[id].adr = (TACHE_ADR)tacheAPeriodique;
     tab_tache_aperiodic[id].name = "FAIRE DES DEVIS";
+	char chaine3[24] = "J'ai fait des devis !";
+	for (int j=0;j<25;j++) {
+		tab_tache_aperiodic[id].params[j] = chaine3[j];
+	}
     active_aperiodic(cree_aperiodic((TACHE_ADR)tacheAPeriodique, id, NULL));
     fifo_ajoute(&fifo_tache_aperiodic, id);
 
@@ -202,6 +215,9 @@ TACHE tachePeriodique(void)
                     SET_FONT_COLOR(15);
                     printf("%2d", id_tache);
                     SET_BACKGROUND_COLOR(0);
+
+                    SET_CURSOR_POSITION(20,pos_x);
+                    printf("     ");
                 }
                 else
                 {
@@ -253,11 +269,56 @@ TACHE tachedefond(void) // ordonnanceur des taches aperiodiques
 
 TACHE tacheAPeriodique(TACHE_APERIODIC *tache)
 {
-   SET_CURSOR_POSITION(20,0);
-   SET_BACKGROUND_COLOR(1);
-   printf("debut TACHE AP : %s                        ",tache->name);
-   for (int i=0;i<10000000;i++) {};
-   SET_CURSOR_POSITION(21,0);
-   SET_BACKGROUND_COLOR(2);
-   printf("fin   TACHE AP : %s                        ",tache->name);
+	SET_CURSOR_POSITION(21,0);
+	SET_BACKGROUND_COLOR(1);
+	printf("debut TACHE AP : %s                        ",tache->name);
+
+	SET_CURSOR_POSITION(25,0);
+	printf("                                ");
+
+
+	int finished = 0;
+	int i = 0;
+	while (finished != 1) {
+		_lock_();
+
+		char chaine[25];
+		for (int j=0;j<25;j++) {
+			chaine[j] = tache->params[j];
+		}
+
+		for (int j=0;j<i;j++) {
+			SET_CURSOR_POSITION(25,i);
+			printf("%c",chaine[j]);
+		}
+		if ((tache->params)[i] == '!') {//caractère de fin
+			finished = 1;
+		};
+
+
+
+		for (int j=0; j<8; j++){
+			SET_CURSOR_POSITION(10+j,pos_x);
+			SET_BACKGROUND_COLOR(0);
+			printf("  ");
+		}
+		SET_CURSOR_POSITION(20,pos_x);
+		SET_BACKGROUND_COLOR(2);
+		SET_FONT_COLOR(15);
+		printf("##");
+		SET_BACKGROUND_COLOR(0);
+		pos_x = pos_x + 2;
+		if (pos_x > MAX_CARA_LIGNE)
+		{
+			pos_x = 1;
+		}
+
+		i++;
+        _unlock_();
+		for (int j=0;j<1000000;j++) {} // attente
+
+   };
+//    SET_CURSOR_POSITION(22,0);
+//    SET_BACKGROUND_COLOR(2);
+//    printf("fin   TACHE AP : %s                        ",tache->name);
 }
