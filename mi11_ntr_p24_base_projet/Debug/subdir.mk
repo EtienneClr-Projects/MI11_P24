@@ -13,7 +13,6 @@ C_SRCS += \
 ../noyau_file_prio.c \
 ../noyau_prio.c \
 ../noyau_test_prio.c \
-../ouvrier_taches.c \
 ../serialio.c \
 ../stm_gpio.c \
 ../stm_uart.c 
@@ -31,7 +30,6 @@ C_DEPS += \
 ./noyau_file_prio.d \
 ./noyau_prio.d \
 ./noyau_test_prio.d \
-./ouvrier_taches.d \
 ./serialio.d \
 ./stm_gpio.d \
 ./stm_uart.d 
@@ -46,7 +44,6 @@ OBJS += \
 ./noyau_file_prio.o \
 ./noyau_prio.o \
 ./noyau_test_prio.o \
-./ouvrier_taches.o \
 ./serialio.o \
 ./stm_gpio.o \
 ./stm_uart.o \
@@ -72,7 +69,7 @@ OBJS += \
 clean: clean--2e-
 
 clean--2e-:
-	-$(RM) ./FIFO.d ./FIFO.o ./SEM.d ./SEM.o ./TERMINAL.d ./TERMINAL.o ./cortex.d ./cortex.o ./delay.d ./delay.o ./init.d ./init.o ./noyau_file_prio.d ./noyau_file_prio.o ./noyau_prio.d ./noyau_prio.o ./noyau_test_prio.d ./noyau_test_prio.o ./ouvrier_taches.d ./ouvrier_taches.o ./serialio.d ./serialio.o ./stm_gpio.d ./stm_gpio.o ./stm_uart.d ./stm_uart.o ./vectors.o
+	-$(RM) ./FIFO.d ./FIFO.o ./SEM.d ./SEM.o ./TERMINAL.d ./TERMINAL.o ./cortex.d ./cortex.o ./delay.d ./delay.o ./init.d ./init.o ./noyau_file_prio.d ./noyau_file_prio.o ./noyau_prio.d ./noyau_prio.o ./noyau_test_prio.d ./noyau_test_prio.o ./serialio.d ./serialio.o ./stm_gpio.d ./stm_gpio.o ./stm_uart.d ./stm_uart.o ./vectors.o
 
 .PHONY: clean--2e-
 
