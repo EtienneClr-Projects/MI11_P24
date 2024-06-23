@@ -306,10 +306,12 @@ TACHE tacheAPeriodique(TACHE_APERIODIC *tache)
 	{
 		_lock_();
 
+		// ici tache->params est un void* donc on doit caster en char*
+		char *param_string = tache->params;
 		char chaine[25];
 		for (int j = 0; j < 25; j++)
 		{
-			chaine[j] = tache->params[j];
+			chaine[j] = param_string[j];
 		}
 
 		for (int j = 0; j < i; j++)
